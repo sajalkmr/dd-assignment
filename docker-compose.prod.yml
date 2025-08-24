@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: dd-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+
+  backend:
+    image: ${DOCKERHUB_USERNAME}/dd-backend:latest
+    container_name: dd-backend
+    restart: unless-stopped
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/dd_db
+      - PORT=8080
+    depends_on:
+      - mongo
+
+  frontend:
+    image: ${DOCKERHUB_USERNAME}/dd-frontend:latest
+    container_name: dd-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  nginx:
+    build:
+      context: ./nginx
+    container_name: dd-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  mongo_data:
+
