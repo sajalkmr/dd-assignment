@@ -28,57 +28,47 @@ Navigate to `http://localhost:8081/`
 
 ## Containerization & Deployment
 
+### Live Deployment
+- Tutorials list: http://4.187.185.157/tutorials
+- Add tutorial: http://4.187.185.157/add
+
 ### Prerequisites
-- Docker and Docker Compose on your machine/VM
-- Docker Hub account and tokens/secrets
+- Docker and Docker Compose on the VM
+- Docker Hub account and secrets configured in GitHub
 
-### Build and run locally with Docker Compose
-
+### Deploy (production)
+- CI/CD builds and pushes Docker images, then deploys on the VM via SSH using `docker-compose.prod.yml`.
+- To deploy manually on the VM:
 ```
-docker compose up -d --build
+cd ~/dd
+echo "DOCKERHUB_USERNAME=<your_dockerhub_username>" > .env
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 Services exposed:
-- Nginx reverse proxy: http://localhost (routes `/` to Angular dev server, `/api` to Node)
-- MongoDB: `mongo:27017` (internal)
+- Port 80 via Nginx reverse proxy
+- Routes: `/` to Angular app, `/api` to Node backend
 
-Environment used by backend:
-- `MONGODB_URI` defaulted to `mongodb://mongo:27017/dd_db` via compose
+Backend environment:
+- `MONGODB_URI` defaults to `mongodb://mongo:27017/dd_db`
 
-### Docker images
-- Backend: `dd-backend` (built from `backend/`)
-- Frontend: `dd-frontend` (built from `frontend/`)
-
-## CI/CD (GitHub Actions)
-
-Workflow: `.github/workflows/ci-cd.yml`
+### CI/CD (GitHub Actions)
+- Workflow: `.github/workflows/ci-cd.yml`
 - On push to `main`:
   - Builds and pushes images to Docker Hub
-  - SSH to VM and runs `docker compose up -d --build`
+  - SSH deploy to VM (`docker compose -f docker-compose.prod.yml up -d`)
 
 Required repo secrets:
-- `DOCKERHUB_USERNAME`
-- `DOCKERHUB_TOKEN`
-- `SSH_HOST`
-- `SSH_USER`
-- `SSH_KEY` (private key)
+- `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
+- `SSH_HOST`, `SSH_USER`, `SSH_KEY`
 
-## VM Setup (Ubuntu)
-1. Install Docker & Compose
-2. Create a working directory, e.g. `~/dd`
-3. Ensure port 80 is open in firewall/security group
-4. First-time: pull repo or let workflow copy `docker-compose.yml` and `nginx` folder
-
-Run on VM:
-```
-cd ~/dd
-docker compose up -d --build
-```
-
-## Nginx reverse proxy
-- Defined in `nginx/nginx.conf`
+### Nginx reverse proxy
+- Config: `nginx/nginx.conf`
 - Proxies `/` to `frontend:4200`, `/api/` to `backend:8080`
 
-## Notes
-- Frontend service uses Angular dev server in container for simplicity; for production you can build static files and serve via Nginx.
-- Backend reads `MONGODB_URI` from environment.
+### Screenshots to add
+- GitHub Actions run (build + deploy)
+- Docker Hub images/tags (backend, frontend)
+- `docker compose -f docker-compose.prod.yml ps` on VM
+- App UI at `http://4.187.185.157/tutorials` and `http://4.187.185.157/add`
+- Nginx config and simple infra diagram
