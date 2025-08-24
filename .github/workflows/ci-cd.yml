@@ -69,10 +69,10 @@ jobs:
           script: |
             set -e
             cd ~/dd
-            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+            sudo -n docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }} || true
             export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-            docker pull ${{ env.IMAGE_BACKEND }}:latest
-            docker pull ${{ env.IMAGE_FRONTEND }}:latest
-            docker compose -f docker-compose.prod.yml down || true
-            docker compose -f docker-compose.prod.yml up -d
+            sudo -n docker pull ${{ env.IMAGE_BACKEND }}:latest
+            sudo -n docker pull ${{ env.IMAGE_FRONTEND }}:latest
+            sudo -n docker compose -f docker-compose.prod.yml down || true
+            sudo -n docker compose -f docker-compose.prod.yml up -d
 
