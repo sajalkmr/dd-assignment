@@ -69,8 +69,9 @@ jobs:
           script: |
             set -e
             cd ~/dd
+            # ensure compose can resolve ${DOCKERHUB_USERNAME}
+            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
             sudo -n docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }} || true
-            export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
             sudo -n docker pull ${{ env.IMAGE_BACKEND }}:latest
             sudo -n docker pull ${{ env.IMAGE_FRONTEND }}:latest
             sudo -n docker compose -f docker-compose.prod.yml down || true
